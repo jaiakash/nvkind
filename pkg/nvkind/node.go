@@ -40,7 +40,15 @@ func (n *Node) InstallContainerToolkit() error {
 			sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
 				tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
 		apt-get update
-		apt-get install -y nvidia-container-toolkit
+
+		# Force a specific version to avoid unmount failure
+		# https://github.com/NVIDIA/nvkind/issues/61
+		export NVIDIA_CONTAINER_TOOLKIT_VERSION=1.17.0-1
+		apt-get install -y \
+		nvidia-container-toolkit=${NVIDIA_CONTAINER_TOOLKIT_VERSION} \
+		nvidia-container-toolkit-base=${NVIDIA_CONTAINER_TOOLKIT_VERSION} \
+		libnvidia-container-tools=${NVIDIA_CONTAINER_TOOLKIT_VERSION} \
+		libnvidia-container1=${NVIDIA_CONTAINER_TOOLKIT_VERSION}
 	`)
 	if err != nil {
 		return fmt.Errorf("running script on %v: %w", n.Name, err)
